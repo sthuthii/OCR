@@ -1,0 +1,25 @@
+body{
+    background-color: rgb(250, 243, 231);
+}
+.logo{
+    align-content: center;
+    height: 700px;
+}
+.logo::after{
+    transform: rotate3d(90deg);
+}
+img{
+    height: 350px;
+    width: 350px;
+    
+}
+
+.text{
+    text-align: center;
+    align-items: baseline;
+    padding-left: 25px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.redirectButton{
+    background-color: black;
+}

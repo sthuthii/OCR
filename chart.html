@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutritional Pie Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> <!-- Plugin for datalabels -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v2.1.1/dist/tesseract.min.js"></script>
+    <link rel="stylesheet" href="charts.css">
+</head>
+<body>
+<div class="upload">
+    <h1>Upload Image for OCR</h1>
+    <div class="input">
+    <input type="file" id="fileInput">
+    </div>
+</div>
+
+    <div style="width: 50%; margin-top: 20px;">
+        <canvas id="nutritionalPieChart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null; // Global variable to store the chart instance
+
+        // Function to perform OCR on uploaded image
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                console.error("No file selected");
+                return;
+            }
+
+            // Perform OCR using Tesseract.js
+            Tesseract.recognize(
+                file,
+                'eng',
+                {
+                    logger: m => console.log(m) // Log progress
+                }
+            ).then(({ data: { text } }) => {
+                console.log("Extracted text:", text);
+                // Process the extracted text to get percentages
+                const nutrientData = extractNutrientPercentages(text);
+                console.log("Extracted nutrient data:", nutrientData);
+                // Check if percentages are extracted properly
+                if (nutrientData.carbs || nutrientData.proteins || nutrientData.fats) {
+                    // Generate pie chart using the extracted data
+                    generatePieChart(nutrientData);
+                } else {
+                    console.error("No nutrient data found in the text");
+                }
+            }).catch(error => {
+                console.error("OCR error:", error);
+            });
+        });
+
+        // Function to extract nutrient percentages from OCR text
+        function extractNutrientPercentages(text) {
+            const carbs = extractPercentage(text, /Carbohydrates\s*=\s*(\d+)%/i);
+            const proteins = extractPercentage(text, /Proteins\s*=\s*(\d+)%/i);
+            const fats = extractPercentage(text, /Fats\s*=\s*(\d+)%/i);
+            
+            return { carbs, proteins, fats };
+        }
+
+        // Helper function to extract percentage value using regex
+        function extractPercentage(text, regex) {
+            const match = text.match(regex);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        // Function to generate pie chart using Chart.js
+        function generatePieChart({ carbs, proteins, fats }) {
+            const ctx = document.getElementById('nutritionalPieChart').getContext('2d');
+            
+            // Destroy existing chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Create a new chart
+            chartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Carbohydrates', 'Proteins', 'Fats'],
+                    datasets: [{
+                        label: 'Nutritional Breakdown',
+                        data: [carbs, proteins, fats],
+                        backgroundColor: ['#ff9999', '#66b3ff', '#99ff99'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value, context) => {
+                                return `${value}%`; // Only show the percentage
+                            },
+                            color: '#fff', // White text to stand out inside colored segment
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            anchor: 'center', // Center the label inside the segment
+                            align: 'center', // Ensure the label is aligned properly inside
+                            padding: 5
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels] // Register the datalabels plugin
+            });
+        }
+    </script>
+
+</body>
+</html>

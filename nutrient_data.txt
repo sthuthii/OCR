@@ -1,0 +1,3 @@
+Carbohydrates 50
+Proteins 30
+Fats 20

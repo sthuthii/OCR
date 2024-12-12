@@ -1,0 +1,22 @@
+*{
+    background-color:rgb(249, 166, 1);;
+}
+h1{
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 50px;
+}
+
+.upload{
+    align-items: center;
+    padding-top: 100px;
+}
+
+.input{
+    justify-content: center;
+    text-align: center;
+}
+
+
+
+
